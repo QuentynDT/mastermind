@@ -1,0 +1,90 @@
+body {
+  background: #111;
+  margin: 0;
+}
+
+.mastermind {
+  max-width: 400px;
+  margin: 40px auto;
+  text-align: center;
+  background: #666;
+  padding: 16px 0 32px 0;
+  border-radius: 16px;
+  box-shadow: 0 3px 16px rgba(0,0,0,0.08);
+}
+
+.colors {
+  display: grid;
+  grid-template-columns: repeat(5, 40px);
+  grid-template-rows: repeat(2, 40px);
+  gap: 8px;
+  justify-content: center;
+  margin-bottom: 16px;
+}
+
+.colors button {
+  width: 40px;
+  height: 40px;
+  margin: 0;
+  border-radius: 50%;
+  border: none;
+  cursor: pointer;
+  outline: 2px solid #bbb;
+  transition: outline 0.2s;
+}
+
+.colors button:focus,
+.colors button.selected {
+  outline: 2px solid #666;
+}
+
+
+.guess-row, .guess, .attempt {
+  display: flex;
+  justify-content: center;
+  margin: 10px 0;
+}
+.guess-slot {
+  width: 40px;
+  height: 40px;
+  margin: 0 5px;
+  border-radius: 50%;
+  border: 2px solid #aaa;
+  background: #000;
+  cursor: pointer;
+}
+.feedback {
+  margin-left: 10px;
+  font-size: 14px;
+}
+.feedback-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 16px);
+  grid-template-rows: repeat(2, 16px);
+  gap: 4px;
+  justify-content: start;
+  align-items: center;
+  min-width: 40px;
+  min-height: 40px;
+}
+.feedback-dot {
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  display: inline-block;
+  border: 1px solid #bbb;
+}
+.feedback-dot.black {
+  background: #111;
+  border-color: #222;
+}
+.feedback-dot.white {
+  background: #fff;
+  border-color: #aaa;
+}
+.feedback-dot.empty {
+  background: transparent;
+  border: none;
+}
+
+

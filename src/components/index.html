@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Response Generator</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        /* Apply Inter font and basic box-sizing */
+        body {
+            font-family: 'Inter', sans-serif;
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            background-color: #f3f4f6; /* Light gray background */
+        }
+        /* Custom scrollbar for textareas - You might want to move this to a global CSS file like src/style.css */
+        textarea::-webkit-scrollbar {
+            width: 8px;
+        }
+        textarea::-webkit-scrollbar-track {
+            background: #f1f1f1;
+            border-radius: 10px;
+        }
+        textarea::-webkit-scrollbar-thumb {
+            background: #888;
+            border-radius: 10px;
+        }
+        textarea::-webkit-scrollbar-thumb:hover {
+            background: #555;
+        }
+    </style>
+</head>
+<body>
+    <div id="app"></div>
+    <script type="module" src="/src/main.js"></script>
+</body>
+</html>
