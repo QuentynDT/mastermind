@@ -1,6 +1,6 @@
 <template>
   <div class="mastermind">
-    <h2>Mastermind</h2>
+    <h2>Mastermind Game</h2>
 
     <div class="secret-code-row">
       <div
@@ -92,11 +92,21 @@ function generateSecret() {
 
 function setSlotColor(index, colorIdx) {
   currentGuess.value[index] = colors[colorIdx];
+  if (index < secretLength - 1) {
+    focusedSlot.value = index + 1;
+  } else {
+    focusedSlot.value = null;
+  }
 }
 
 function setColor(index) {
   if (selectedColor.value) {
     currentGuess.value[index] = selectedColor.value;
+    if (index < secretLength - 1) {
+      focusedSlot.value = index + 1;
+    } else {
+      focusedSlot.value = null;
+    }
   }
 }
 

@@ -111,5 +111,63 @@ body {
   user-select: none;
   pointer-events: none;
 }
+.action-buttons {
+  display: flex;
+  gap: 12px;
+  justify-content: center;
+  margin-bottom: 10px;
+}
+.action-buttons button {
+  padding: 8px 18px;
+  border-radius: 6px;
+  border: 1px solid #bbb;
+  font-size: 1em;
+  background: #f6f6f6;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+.action-buttons button:hover {
+  background: #e1e1e1;
+}
+.secret-row-with-reset {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 14px;
+  margin-bottom: 6px;
+}
+
+.mini-reset {
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  border: none;
+  background: #e53935;
+  box-shadow: 0 1px 2px #b71c1c15;
+  color: #fff;
+  font-size: 1.5em;
+  font-weight: bold;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  position: relative;
+  transition: background 0.18s;
+}
+.mini-reset:hover {
+  background: #b71c1c;
+}
+.mini-reset:after {
+  content: "⟳";
+  font-size: 1.1em;
+  font-weight: bold;
+  position: absolute;
+  top: 3px;
+  left: 6px;
+  color: #fff;
+  pointer-events: none;
+}
+
 
 
