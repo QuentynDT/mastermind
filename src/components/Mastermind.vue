@@ -1,6 +1,17 @@
 <template>
   <div class="mastermind">
-    <h2>Mastermind Game</h2>
+    <h2>Mastermind</h2>
+
+    <div class="secret-code-row">
+      <div
+        v-for="(peg, i) in secretLength"
+        :key="i"
+        class="secret-slot"
+        :style="gameOver ? { backgroundColor: secret[i] } : { backgroundColor: '#444' }"
+      >
+        <span v-if="!gameOver" class="secret-mark">?</span>
+      </div>
+    </div>
 
     <div class="colors">
       <button
@@ -18,8 +29,9 @@
         v-for="(slot, i) in secretLength"
         :key="i"
         class="guess-slot"
+        :class="{ focused: focusedSlot === i }"
         :style="{backgroundColor: currentGuess[i] || '#444'}"
-        @click="setColor(i)"
+        @click="focusedSlot = i"
       ></div>
     </div>
 
@@ -47,16 +59,7 @@
 
     <div v-if="gameOver">
       <p v-if="winner">You won! 🎉</p>
-      <p v-else>
-        You lost! Secret was:&nbsp;
-        <span>
-          <span
-            v-for="(c, i) in secret"
-            :key="i"
-            :style="{backgroundColor: c, display: 'inline-block', width: '24px', height: '24px', borderRadius: '50%', marginRight: '6px', border: '2px solid #ccc'}"
-          ></span>
-        </span>
-      </p>
+      <p v-else>You lost!</p>
       <button @click="resetGame">Play Again</button>
     </div>
   </div>
@@ -67,7 +70,7 @@ import { ref, computed, onMounted, onUnmounted } from 'vue';
 
 const colors = [
   "red", "orange", "yellow", "green", "blue",
-  "purple", "pink", "brown", "black", "white"
+  "purple", "pink", "saddlebrown", "black", "white"
 ];
 const secretLength = 4;
 const maxAttempts = 10;
@@ -78,12 +81,17 @@ const selectedColor = ref(null);
 const attempts = ref([]);
 const gameOver = ref(false);
 const winner = ref(false);
+const focusedSlot = ref(null);
 
 function generateSecret() {
   secret.value = Array.from(
     {length: secretLength},
     () => colors[Math.floor(Math.random() * colors.length)]
   );
+}
+
+function setSlotColor(index, colorIdx) {
+  currentGuess.value[index] = colors[colorIdx];
 }
 
 function setColor(index) {
@@ -130,6 +138,7 @@ function submitGuess() {
     gameOver.value = true;
   }
   currentGuess.value = new Array(secretLength).fill(null);
+  focusedSlot.value = null;
 }
 
 function resetGame() {
@@ -137,6 +146,7 @@ function resetGame() {
   currentGuess.value = new Array(secretLength).fill(null);
   gameOver.value = false;
   winner.value = false;
+  focusedSlot.value = null;
   generateSecret();
 }
 
@@ -147,17 +157,23 @@ function feedbackPegs(black, white) {
   while (dots.length < 4) dots.push('empty');
   return dots;
 }
-function selectColorByIndex(idx) {
-  if (idx >= 0 && idx < colors.length) {
-    selectedColor.value = colors[idx];
-  }
-}
 
 function onKeyDown(event) {
-  if (event.key >= '1' && event.key <= '9') {
-    selectColorByIndex(parseInt(event.key, 10) - 1);
-  } else if (event.key === '0') {
-    selectColorByIndex(9);
+  let colorIdx = null;
+  if (event.key >= '1' && event.key <= '9') colorIdx = parseInt(event.key, 10) - 1;
+  else if (event.key === '0') colorIdx = 9;
+
+  if (colorIdx !== null && colorIdx >= 0 && colorIdx < colors.length && !gameOver.value) {
+    if (focusedSlot.value !== null) {
+      setSlotColor(focusedSlot.value, colorIdx);
+    } else {
+      for (let i = 0; i < secretLength; i++) {
+        if (!currentGuess.value[i]) {
+          setSlotColor(i, colorIdx);
+          break;
+        }
+      }
+    }
   } else if (event.key === 'Enter' && isGuessComplete.value && !gameOver.value) {
     submitGuess();
   }
