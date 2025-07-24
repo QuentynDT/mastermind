@@ -18,7 +18,7 @@
         v-for="(slot, i) in secretLength"
         :key="i"
         class="guess-slot"
-        :style="{backgroundColor: currentGuess[i] || '#eee'}"
+        :style="{backgroundColor: currentGuess[i] || '#444'}"
         @click="setColor(i)"
       ></div>
     </div>
@@ -32,7 +32,7 @@
             v-for="(color, idx) in attempt.guess"
             :key="idx"
             class="guess-slot"
-            :style="{backgroundColor: color || '#eee'}"
+            :style="{backgroundColor: color || '#444'}"
           ></div>
         </div>
         <div class="feedback-grid">
@@ -48,7 +48,7 @@
     <div v-if="gameOver">
       <p v-if="winner">You won! 🎉</p>
       <p v-else>
-        You lost! Secret was:
+        You lost! Secret was:&nbsp;
         <span>
           <span
             v-for="(c, i) in secret"
@@ -63,14 +63,14 @@
 </template>
 
 <script setup>
-import { ref, computed } from 'vue';
+import { ref, computed, onMounted, onUnmounted } from 'vue';
 
 const colors = [
   "red", "orange", "yellow", "green", "blue",
   "purple", "pink", "brown", "black", "white"
 ];
 const secretLength = 4;
-const maxAttempts = 4;
+const maxAttempts = 10;
 
 const secret = ref([]);
 const currentGuess = ref(new Array(secretLength).fill(null));
@@ -80,7 +80,6 @@ const gameOver = ref(false);
 const winner = ref(false);
 
 function generateSecret() {
-  // Allow duplicates for a classic mastermind feel
   secret.value = Array.from(
     {length: secretLength},
     () => colors[Math.floor(Math.random() * colors.length)]
@@ -106,14 +105,12 @@ function submitGuess() {
   const secretCopy = secret.value.slice();
   const guessCopy = guess.slice();
 
-  // Black peg: right color in right slot
   for (let i = 0; i < secretLength; i++) {
     if (guessCopy[i] === secretCopy[i]) {
       black++;
       secretCopy[i] = guessCopy[i] = null;
     }
   }
-  // White peg: right color, wrong slot
   for (let i = 0; i < secretLength; i++) {
     if (guessCopy[i] !== null) {
       const idx = secretCopy.indexOf(guessCopy[i]);
@@ -143,15 +140,35 @@ function resetGame() {
   generateSecret();
 }
 
-// Helper function for feedback dots in 2x2 grid
 function feedbackPegs(black, white) {
-  // Black first, then white, then empty until 4 total
   const dots = [];
   for (let i = 0; i < black; i++) dots.push('black');
   for (let i = 0; i < white; i++) dots.push('white');
   while (dots.length < 4) dots.push('empty');
   return dots;
 }
+function selectColorByIndex(idx) {
+  if (idx >= 0 && idx < colors.length) {
+    selectedColor.value = colors[idx];
+  }
+}
+
+function onKeyDown(event) {
+  if (event.key >= '1' && event.key <= '9') {
+    selectColorByIndex(parseInt(event.key, 10) - 1);
+  } else if (event.key === '0') {
+    selectColorByIndex(9);
+  } else if (event.key === 'Enter' && isGuessComplete.value && !gameOver.value) {
+    submitGuess();
+  }
+}
+
+onMounted(() => {
+  window.addEventListener('keydown', onKeyDown);
+});
+onUnmounted(() => {
+  window.removeEventListener('keydown', onKeyDown);
+});
 
 generateSecret();
 </script>
