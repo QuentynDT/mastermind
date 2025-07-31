@@ -1,7 +1,7 @@
 <template>
-  <div class="mastermind-app">
+  <div class="app">
     <div class="game-container">
-      <div class="mastermind-board">
+      <div class="board">
         <h2>Mastermind</h2>
         <div class="settings">
           <label for="num-colors-slider">Colors: {{ pendingNumColors }}</label>
@@ -82,7 +82,7 @@
         </div>
       </div>
 
-      <div class="mastermind-board" v-if="gameOver">
+      <div class="board" v-if="gameOver">
         <h2>Knuth's Algorithm</h2>
         <div class="secret-code-row">
           <div
@@ -374,12 +374,15 @@ onUnmounted(() => {
 </script>
 
 <style>
-.mastermind-app {
+.app {
     display: flex;
     justify-content: center;
     align-items: flex-start;
     padding: 20px;
     width: 100%;
+    max-width: 100%;
+    box-sizing: border-box;
+    overflow-x: hidden;
 }
 .game-container {
     display: flex;
@@ -387,12 +390,12 @@ onUnmounted(() => {
     justify-content: center;
     gap: 30px;
 }
-.mastermind-board {
+.board {
     font-family: sans-serif;
     display: flex;
     flex-direction: column;
     align-items: center;
-    gap: 15px;
+    gap: 6px;
     background-color: #333;
     color: white;
     padding: 20px;
@@ -401,7 +404,7 @@ onUnmounted(() => {
     flex-grow: 1;
     box-sizing: border-box;
 }
-.mastermind-board h2 {
+.board h2 {
     margin-top: 0;
     margin-bottom: 10px;
 }
@@ -429,7 +432,7 @@ onUnmounted(() => {
 }
 .secret-code-row, .guess-row, .guess {
     display: flex;
-    gap: 10px;
+    gap: 12px;
 }
 .secret-slot, .guess-slot {
     width: 40px;
@@ -481,7 +484,7 @@ button:disabled {
 .history {
     display: flex;
     flex-direction: column;
-    gap: 5px;
+    gap: 0px;
     width: 100%;
     min-height: 250px;
 }
@@ -507,8 +510,8 @@ button:disabled {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    padding: 5px;
-    border-radius: 4px;
+    padding: 3px;
+    border-radius: 0px;
     background-color: #2c2c2c;
 }
 .feedback-grid {
