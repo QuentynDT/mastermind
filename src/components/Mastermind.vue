@@ -4,15 +4,22 @@
       <div class="mastermind-board">
         <h2>Mastermind</h2>
         <div class="settings">
-          <label for="num-colors-slider">Colors: {{ numColors }}</label>
+          <label for="num-colors-slider">Colors: {{ pendingNumColors }}</label>
           <input
             id="num-colors-slider"
             type="range"
             min="4"
             :max="allColors.length"
-            v-model.number="numColors"
+            v-model.number="pendingNumColors"
             class="slider"
           />
+          <button
+            @click="confirmNumColors"
+            :disabled="pendingNumColors === numColors"
+            class="confirm-btn"
+          >
+            Confirm
+          </button>
         </div>
 
         <div class="secret-code-row">
@@ -76,46 +83,43 @@
       </div>
 
       <div class="mastermind-board" v-if="gameOver">
-          <h2>Knuth's Algorithm</h2>
-          
-          <div class="secret-code-row">
-            <div
-              v-for="(peg, i) in secretLength"
-              :key="i"
-              class="secret-slot"
-              :style="{ backgroundColor: secret[i] }"
-            ></div>
+        <h2>Knuth's Algorithm</h2>
+        <div class="secret-code-row">
+          <div
+            v-for="(peg, i) in secretLength"
+            :key="i"
+            class="secret-slot"
+            :style="{ backgroundColor: secret[i] }"
+          ></div>
+        </div>
+        <div class="history knuth-history">
+          <div v-if="knuthAttempts.length === 0 && !isKnuthCalculating" class="placeholder-text">
+            Algorithm will begin shortly...
           </div>
-          
-          <div class="history knuth-history">
-              <div v-if="knuthAttempts.length === 0 && !isKnuthCalculating" class="placeholder-text">
-                  Algorithm will begin shortly...
-              </div>
-              <div v-for="(attempt, index) in knuthAttempts" :key="index" class="attempt">
-                  <div class="guess">
-                  <div
-                      v-for="(color, idx) in attempt.guess"
-                      :key="idx"
-                      class="guess-slot"
-                      :style="{backgroundColor: color || '#444'}"
-                  ></div>
-                  </div>
-                  <div class="feedback-grid">
-                  <span
-                      v-for="(peg, idx) in feedbackPegs(attempt.black, attempt.white)"
-                      :key="idx"
-                      :class="['feedback-dot', peg]"
-                  ></span>
-                  </div>
-              </div>
+          <div v-for="(attempt, index) in knuthAttempts" :key="index" class="attempt">
+            <div class="guess">
+              <div
+                v-for="(color, idx) in attempt.guess"
+                :key="idx"
+                class="guess-slot"
+                :style="{backgroundColor: color || '#444'}"
+              ></div>
+            </div>
+            <div class="feedback-grid">
+              <span
+                v-for="(peg, idx) in feedbackPegs(attempt.black, attempt.white)"
+                :key="idx"
+                :class="['feedback-dot', peg]"
+              ></span>
+            </div>
           </div>
-          <p v-if="isKnuthCalculating" class="thinking-text">Algorithm is thinking...</p>
-          
-          <div v-if="summaryData" class="summary-box">
-            <p>{{ summaryData.text1 }}</p>
-            <p>{{ summaryData.text2 }}</p>
-            <p class="summary-phrase">{{ summaryData.phrase }}</p>
-          </div>
+        </div>
+        <p v-if="isKnuthCalculating" class="thinking-text">Algorithm is thinking...</p>
+        <div v-if="summaryData" class="summary-box">
+          <p>{{ summaryData.text1 }}</p>
+          <p>{{ summaryData.text2 }}</p>
+          <p class="summary-phrase">{{ summaryData.phrase }}</p>
+        </div>
       </div>
     </div>
   </div>
@@ -131,7 +135,9 @@ const allColors = Object.freeze([
 const secretLength = 4;
 const maxAttempts = 6;
 
-const numColors = ref(8);
+const numColors = ref(8);                       // actual game value
+const pendingNumColors = ref(numColors.value);  // UI value for the slider
+
 const colors = computed(() => allColors.slice(0, numColors.value));
 
 const secret = ref([]);
@@ -147,22 +153,26 @@ const isKnuthRunning = ref(false);
 const isKnuthCalculating = ref(false);
 
 const summaryData = computed(() => {
-    if (gameOver.value && !isKnuthRunning.value && knuthAttempts.value.length > 0) {
-        const knuthsAttempts = knuthAttempts.value.length;
-        const playerAttempts = winner.value ? attempts.value.length : maxAttempts;
-
-        const text1 = `Knuth's algorithm solved it in ${knuthsAttempts} attempts.`;
-        const text2 = (winner.value) ? `You used ${playerAttempts} attempts.` : "You did not finish.";
-        const phrase = (!winner.value) ? "Better luck next time...": 
-        (playerAttempts - knuthsAttempts <= 0) ? "Outstanding!":
-        (playerAttempts - knuthsAttempts <= 2) ? "Not Quite.":
-        "Nice Try.";
-
-        return { text1, text2, phrase };
-    }
-    return null;
+  if (gameOver.value && !isKnuthRunning.value && knuthAttempts.value.length > 0) {
+    const knuthsAttempts = knuthAttempts.value.length;
+    const playerAttempts = winner.value ? attempts.value.length : maxAttempts;
+    const text1 = `Knuth's algorithm used ${knuthsAttempts} attempts.`;
+    const text2 = (winner.value) ? `You used ${playerAttempts} attempts.` : "You did not finish.";
+    const phrase = (!winner.value) ? "Better luck next time...":
+      (playerAttempts - knuthsAttempts == -4) ? "Condor!":
+      (playerAttempts - knuthsAttempts == -3) ? "Albatross!":
+      (playerAttempts - knuthsAttempts == -2) ? "Eagle!":
+      (playerAttempts - knuthsAttempts == -1) ? "Birdie!":
+      (playerAttempts - knuthsAttempts == 0) ? "Par!":
+      (playerAttempts - knuthsAttempts == 1) ? "Bogey!":
+      (playerAttempts - knuthsAttempts == 2) ? "Doublee Bogey!":
+      (playerAttempts - knuthsAttempts == 3) ? "Triple Bogey!":
+      (playerAttempts - knuthsAttempts <= 2) ? "Not Quite.":
+      "Nice Try.";
+    return { text1, text2, phrase };
+  }
+  return null;
 });
-
 
 function generateSecret() {
   secret.value = Array.from(
@@ -176,7 +186,6 @@ function calculateFeedback(guess, codeToSolve) {
   let white = 0;
   const secretCopy = codeToSolve.slice();
   const guessCopy = guess.slice();
-
   for (let i = 0; i < secretLength; i++) {
     if (guessCopy[i] === secretCopy[i]) {
       black++;
@@ -200,7 +209,6 @@ function calculateFeedback(guess, codeToSolve) {
 function submitGuess() {
   if (!isGuessComplete.value || gameOver.value) return;
   const guess = currentGuess.value.slice();
-  
   const { black, white } = calculateFeedback(guess, secret.value);
   attempts.value.push({ guess, black, white });
 
@@ -210,7 +218,6 @@ function submitGuess() {
   } else if (attempts.value.length >= maxAttempts) {
     gameOver.value = true;
   }
-
   currentGuess.value = new Array(secretLength).fill(null);
   focusedSlot.value = 0;
 }
@@ -250,30 +257,39 @@ function resetGame() {
   generateSecret();
 }
 
-function handleKeyDown(event) {
-    if (gameOver.value) return;
-    let colorIdx = null;
-    if (event.key >= '1' && event.key <= '9') {
-        colorIdx = parseInt(event.key, 10) - 1;
-    } else if (event.key === '0') {
-        colorIdx = 9;
-    }
+// -- Confirm color count changes --
+function confirmNumColors() {
+  if (pendingNumColors.value !== numColors.value) {
+    numColors.value = pendingNumColors.value;
+    resetGame();
+  }
+}
+// ---------------------------------
 
-    if (colorIdx !== null && colorIdx < colors.value.length) {
-        setSlotColor(focusedSlot.value, colors.value[colorIdx]);
-    } else if (event.key === 'Enter' && isGuessComplete.value) {
-        submitGuess();
-    } else if (event.key === 'Backspace') {
-        const targetSlot = focusedSlot.value === null ? secretLength - 1 : currentGuess.value[focusedSlot.value] === null ? focusedSlot.value - 1 : focusedSlot.value;
-        if(targetSlot >= 0) {
-            currentGuess.value[targetSlot] = null;
-            focusedSlot.value = targetSlot;
-        }
-    } else if (event.key === 'ArrowLeft' && focusedSlot.value > 0) {
-        focusedSlot.value--;
-    } else if (event.key === 'ArrowRight' && focusedSlot.value < secretLength - 1) {
-        focusedSlot.value++;
+function handleKeyDown(event) {
+  if (gameOver.value) return;
+  let colorIdx = null;
+  if (event.key >= '1' && event.key <= '9') {
+    colorIdx = parseInt(event.key, 10) - 1;
+  } else if (event.key === '0') {
+    colorIdx = 9;
+  }
+
+  if (colorIdx !== null && colorIdx < colors.value.length) {
+    setSlotColor(focusedSlot.value, colors.value[colorIdx]);
+  } else if (event.key === 'Enter' && isGuessComplete.value) {
+    submitGuess();
+  } else if (event.key === 'Backspace') {
+    const targetSlot = focusedSlot.value === null ? secretLength - 1 : currentGuess.value[focusedSlot.value] === null ? focusedSlot.value - 1 : focusedSlot.value;
+    if(targetSlot >= 0) {
+      currentGuess.value[targetSlot] = null;
+      focusedSlot.value = targetSlot;
     }
+  } else if (event.key === 'ArrowLeft' && focusedSlot.value > 0) {
+    focusedSlot.value--;
+  } else if (event.key === 'ArrowRight' && focusedSlot.value < secretLength - 1) {
+    focusedSlot.value++;
+  }
 }
 
 watch(gameOver, (isOver) => {
@@ -282,84 +298,69 @@ watch(gameOver, (isOver) => {
   }
 });
 
-watch(numColors, () => {
-    resetGame();
-});
+// -- Removed the auto-reset watcher for numColors! --
 
 const sleep = ms => new Promise(res => setTimeout(res, ms));
 
 function generateAllPossibleCodes(currentColors) {
-    const allCodes = [];
-    function generate(prefix) {
-        if (prefix.length === secretLength) {
-            allCodes.push(prefix);
-            return;
-        }
-        for (const color of currentColors) {
-            generate([...prefix, color]);
-        }
+  const allCodes = [];
+  function generate(prefix) {
+    if (prefix.length === secretLength) {
+      allCodes.push(prefix);
+      return;
     }
-    generate([]);
-    return allCodes;
+    for (const color of currentColors) {
+      generate([...prefix, color]);
+    }
+  }
+  generate([]);
+  return allCodes;
 }
 
 async function runKnuthAlgorithm() {
-    isKnuthRunning.value = true;
-    let S = generateAllPossibleCodes(colors.value);
-    const A = S.slice();
-    let guess = [colors.value[0], colors.value[0], colors.value[1], colors.value[1]];
-
-    while(true) {
-        if(knuthAttempts.value.length >= maxAttempts) break;
-
-        const { black, white } = calculateFeedback(guess, secret.value);
-        knuthAttempts.value.push({ guess, black, white });
-
-        if (black === secretLength) break;
-
-        S = S.filter(code => {
-            const feedback = calculateFeedback(guess, code);
-            return feedback.black === black && feedback.white === white;
-        });
-
-        if (S.length === 0) break;
-        
-        await sleep(2000);
-
-        isKnuthCalculating.value = true;
-        await sleep(10);
-        
-        let minMax = Infinity;
-
-        const searchSpace = S.length > A.length ? A : S;
-        
-        const bestGuesses = [];
-        for (const possibleGuess of searchSpace) {
-            const scoreCounts = {};
-            for (const possibleSecret of S) {
-                const { black, white } = calculateFeedback(possibleGuess, possibleSecret);
-                const scoreKey = `${black},${white}`;
-                scoreCounts[scoreKey] = (scoreCounts[scoreKey] || 0) + 1;
-            }
-            const maxPartitionSize = Math.max(0, ...Object.values(scoreCounts));
-            
-            if (maxPartitionSize < minMax) {
-                minMax = maxPartitionSize;
-                bestGuesses.length = 0;
-                bestGuesses.push(possibleGuess);
-            } else if (maxPartitionSize === minMax) {
-                bestGuesses.push(possibleGuess)
-            }
-        }
-
-        const guessInS = bestGuesses.find(g => S.some(s => s.every((val, i) => val === g[i])));
-        guess = guessInS || bestGuesses[0] || S[0];
-
-        isKnuthCalculating.value = false;
-        if (!guess) break;
+  isKnuthRunning.value = true;
+  let S = generateAllPossibleCodes(colors.value);
+  const A = S.slice();
+  let guess = [colors.value[0], colors.value[0], colors.value[1], colors.value[1]];
+  while(true) {
+    if(knuthAttempts.value.length >= maxAttempts) break;
+    const { black, white } = calculateFeedback(guess, secret.value);
+    knuthAttempts.value.push({ guess, black, white });
+    if (black === secretLength) break;
+    S = S.filter(code => {
+      const feedback = calculateFeedback(guess, code);
+      return feedback.black === black && feedback.white === white;
+    });
+    if (S.length === 0) break;
+    await sleep(2000);
+    isKnuthCalculating.value = true;
+    await sleep(10);
+    let minMax = Infinity;
+    const searchSpace = S.length > A.length ? A : S;
+    const bestGuesses = [];
+    for (const possibleGuess of searchSpace) {
+      const scoreCounts = {};
+      for (const possibleSecret of S) {
+        const { black, white } = calculateFeedback(possibleGuess, possibleSecret);
+        const scoreKey = `${black},${white}`;
+        scoreCounts[scoreKey] = (scoreCounts[scoreKey] || 0) + 1;
+      }
+      const maxPartitionSize = Math.max(0, ...Object.values(scoreCounts));
+      if (maxPartitionSize < minMax) {
+        minMax = maxPartitionSize;
+        bestGuesses.length = 0;
+        bestGuesses.push(possibleGuess);
+      } else if (maxPartitionSize === minMax) {
+        bestGuesses.push(possibleGuess)
+      }
     }
-    isKnuthRunning.value = false;
+    const guessInS = bestGuesses.find(g => S.some(s => s.every((val, i) => val === g[i])));
+    guess = guessInS || bestGuesses[0] || S[0];
     isKnuthCalculating.value = false;
+    if (!guess) break;
+  }
+  isKnuthRunning.value = false;
+  isKnuthCalculating.value = false;
 }
 
 onMounted(() => {
@@ -416,6 +417,15 @@ onUnmounted(() => {
 }
 .slider {
     width: 100%;
+}
+.confirm-btn {
+    margin-left: 8px;
+    background-color: #2196F3;
+}
+.confirm-btn:disabled {
+    background-color: #888;
+    color: #ccc;
+    cursor: not-allowed;
 }
 .secret-code-row, .guess-row, .guess {
     display: flex;
