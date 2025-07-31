@@ -228,10 +228,13 @@ function feedbackPegs(black, white) {
 }
 
 function setSlotColor(index, color) {
-    if (index === null) return;
-    currentGuess.value[index] = color;
-    let nextEmptySlot = currentGuess.value.indexOf(null);
-    focusedSlot.value = nextEmptySlot !== -1 ? nextEmptySlot : null;
+  if (index === null) return;
+  currentGuess.value[index] = color;
+  if (index < secretLength - 1) {
+      focusedSlot.value = index + 1;
+  } else {
+      focusedSlot.value = 0;
+  }
 }
 
 function resetGame() {
@@ -422,7 +425,7 @@ onUnmounted(() => {
     width: 40px;
     height: 40px;
     border-radius: 50%;
-    border: 2px solid #666;
+    border: 0px solid #666;
     display: flex;
     justify-content: center;
     align-items: center;
@@ -431,8 +434,8 @@ onUnmounted(() => {
     cursor: pointer;
 }
 .guess-slot.focused {
-    border-color: white;
-    box-shadow: 0 0 10px cyan;
+    border-color: gray;
+    box-shadow: 0 0 10px lime;
 }
 .colors {
     display: flex;
@@ -509,9 +512,15 @@ button:disabled {
     border-radius: 50%;
     border: 1px solid #777;
 }
-.feedback-dot.black { background-color: black; }
-.feedback-dot.white { background-color: white; }
-.feedback-dot.empty { background-color: #555; }
+.feedback-dot.black { 
+  background-color: black; 
+}
+.feedback-dot.white { 
+  background-color: white; 
+}
+.feedback-dot.empty { 
+  background-color: #555; 
+}
 .summary-box {
     margin-top: auto;
     padding: 10px;
